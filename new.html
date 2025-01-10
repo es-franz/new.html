@@ -36,11 +36,19 @@
         <div class="district" id="district1">
           <h3>District 1</h3>
           <div class="input-field">
+            <label for="district1Name">District 1 Name:</label>
+            <input type="text" id="district1Name" name="district1Name" required>
+          </div>
+          <div class="input-field">
             <label for="district1Leader">District 1 Leader Email:</label>
             <input type="text" id="district1Leader" name="district1Leader" required>
           </div>
           <div id="district1areas">
             <div class="area">
+              <div class="input-field">
+                <label for="district1area1Name">District 1 Area 1 Name:</label>
+                <input type="text" id="district1area1Name" name="district1area1Name" required>
+              </div>
               <div class="input-field">
                 <label for="district1area1email">District 1 Area 1 Email:</label>
                 <input type="text" id="district1area1email" name="district1area1email" required>
@@ -79,6 +87,10 @@
       areaDiv.className = 'area';
       areaDiv.innerHTML = `
         <div class="input-field">
+          <label for="district${districtIndex}area${areaIndex}Name">District ${districtIndex} Area ${areaIndex} Name:</label>
+          <input type="text" id="district${districtIndex}area${areaIndex}Name" name="district${districtIndex}area${areaIndex}Name" required>
+        </div>
+        <div class="input-field">
           <label for="district${districtIndex}area${areaIndex}email">District ${districtIndex} Area ${areaIndex} Email:</label>
           <input type="text" id="district${districtIndex}area${areaIndex}email" name="district${districtIndex}area${areaIndex}email" required>
         </div>
@@ -103,11 +115,19 @@
       districtDiv.innerHTML = `
         <h3>District ${districtCount}</h3>
         <div class="input-field">
+          <label for="district${districtCount}Name">District ${districtCount} Name:</label>
+          <input type="text" id="district${districtCount}Name" name="district${districtCount}Name" required>
+        </div>
+        <div class="input-field">
           <label for="district${districtCount}Leader">District ${districtCount} Leader Email:</label>
           <input type="text" id="district${districtCount}Leader" name="district${districtCount}Leader" required>
         </div>
         <div id="district${districtCount}areas">
           <div class="area">
+            <div class="input-field">
+              <label for="district${districtCount}area1Name">District ${districtCount} Area 1 Name:</label>
+              <input type="text" id="district${districtCount}area1Name" name="district${districtCount}area1Name" required>
+            </div>
             <div class="input-field">
               <label for="district${districtCount}area1email">District ${districtCount} Area 1 Email:</label>
               <input type="text" id="district${districtCount}area1email" name="district${districtCount}area1email" required>
@@ -146,15 +166,16 @@
         userAccess[districtLeaderEmail] = [];
 
         for (let a = 1; a <= areaCount[d - 1]; a++) {
+          const areaName = data[`district${d}area${a}Name`];
           const areaEmail = data[`district${d}area${a}email`];
           const areaType = data[`district${d}area${a}type`];
-          userAccess[areaEmail] = [`Plots for district${d}area${a}`, `district${d}area${a}`];
+          userAccess[areaEmail] = [`Plots for ${areaName}`, areaName];
 
-          userAccess[districtLeaderEmail].push(`Plots for district${d}area${a}`, `district${d}area${a}`);
+          userAccess[districtLeaderEmail].push(`Plots for ${areaName}`, areaName);
 
           if (areaType === 'sisters') {
-            stlAccess.push(`Plots for district${d}area${a}`, `district${d}area${a}`);
-            userAccess[stlEmail].push(`Plots for district${d}area${a}`, `district${d}area${a}`);
+            stlAccess.push(`Plots for ${areaName}`, areaName);
+            userAccess[stlEmail].push(`Plots for ${areaName}`, areaName);
           }
         }
       }
