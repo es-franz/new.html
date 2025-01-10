@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      margin: 20px;
+    }
+    .input-field {
+      margin-bottom: 10px;
+    }
+    .button {
+      margin-top: 10px;
+    }
+    .dropdown {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Configure User Access</h2>
+    <form id="accessForm">
+      <div class="input-field">
+        <label for="zoneLeader">Zone Leader Email:</label>
+        <input type="text" id="zoneLeader" name="zoneLeader" required>
+      </div>
+      <div class="input-field">
+        <label for="adminEmails">Mission President and AP Emails (comma-separated):</label>
+        <input type="text" id="adminEmails" name="adminEmails" required>
+      </div>
+      <div id="districtFields">
+        <div class="district" id="district1">
+          <h3>District 1</h3>
+          <div class="input-field">
+            <label for="district1Leader">District 1 Leader Email:</label>
+            <input type="text" id="district1Leader" name="district1Leader" required>
+          </div>
+          <div id="district1areas">
+            <div class="area">
+              <div class="input-field">
+                <label for="district1area1email">District 1 Area 1 Email:</label>
+                <input type="text" id="district1area1email" name="district1area1email" required>
+              </div>
+              <div class="dropdown">
+                <label for="district1area1type">District 1 Area 1 Type:</label>
+                <select id="district1area1type" name="district1area1type">
+                  <option value="elders">Elders</option>
+                  <option value="sisters">Sisters</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <button type="button" onclick="addArea(1)">Add Another Area</button><br><br>
+        </div>
+      </div>
+      <button type="button" onclick="addDistrict()">Add Another District</button><br><br>
+      <div class="input-field">
+        <label for="stlEmail">STL Area Email:</label>
+        <input type="text" id="stlEmail" name="stlEmail" required>
+      </div>
+      <button type="submit" class="button">Generate Script</button>
+    </form>
+    <pre id="generatedScript"></pre>
+  </div>
+
+  <script>
+    let districtCount = 1;
+    let areaCount = [1];
+
+    function addArea(districtIndex) {
+      const areasDiv = document.getElementById(`district${districtIndex}areas`);
+      areaCount[districtIndex - 1]++;
+      const areaIndex = areaCount[districtIndex - 1];
+      const areaDiv = document.createElement('div');
+      areaDiv.className = 'area';
+      areaDiv.innerHTML = `
+        <div class="input-field">
+          <label for="district${districtIndex}area${areaIndex}email">District ${districtIndex} Area ${areaIndex} Email:</label>
+          <input type="text" id="district${districtIndex}area${areaIndex}email" name="district${districtIndex}area${areaIndex}email" required>
+        </div>
+        <div class="dropdown">
+          <label for="district${districtIndex}area${areaIndex}type">District ${districtIndex} Area ${areaIndex} Type:</label>
+          <select id="district${districtIndex}area${areaIndex}type" name="district${districtIndex}area${areaIndex}type">
+            <option value="elders">Elders</option>
+            <option value="sisters">Sisters</option>
+          </select>
+        </div>
+      `;
+      areasDiv.appendChild(areaDiv);
+    }
+
+    function addDistrict() {
+      districtCount++;
+      areaCount[districtCount - 1] = 1;
+      const districtFields = document.getElementById('districtFields');
+      const districtDiv = document.createElement('div');
+      districtDiv.className = 'district';
+      districtDiv.id = `district${districtCount}`;
+      districtDiv.innerHTML = `
+        <h3>District ${districtCount}</h3>
+        <div class="input-field">
+          <label for="district${districtCount}Leader">District ${districtCount} Leader Email:</label>
+          <input type="text" id="district${districtCount}Leader" name="district${districtCount}Leader" required>
+        </div>
+        <div id="district${districtCount}areas">
+          <div class="area">
+            <div class="input-field">
+              <label for="district${districtCount}area1email">District ${districtCount} Area 1 Email:</label>
+              <input type="text" id="district${districtCount}area1email" name="district${districtCount}area1email" required>
+            </div>
+            <div class="dropdown">
+              <label for="district${districtCount}area1type">District ${districtCount} Area 1 Type:</label>
+              <select id="district${districtCount}area1type" name="district${districtCount}area1type">
+                <option value="elders">Elders</option>
+                <option value="sisters">Sisters</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button type="button" onclick="addArea(${districtCount})">Add Another Area</button><br><br>
+      `;
+      districtFields.appendChild(districtDiv);
+    }
+
+    document.getElementById('accessForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const data = Object.fromEntries(formData);
+
+      let userAccess = {};
+      let stlAccess = [];
+      const zoneLeaderEmail = data.zoneLeader;
+      const adminEmails = data.adminEmails.split(',').map(email => email.trim());
+      const stlEmail = data.stlEmail;
+
+      userAccess[zoneLeaderEmail] = 'admin';
+      adminEmails.forEach(email => userAccess[email] = 'admin');
+      userAccess[stlEmail] = [];
+
+      for (let d = 1; d <= districtCount; d++) {
+        const districtLeaderEmail = data[`district${d}Leader`];
+        userAccess[districtLeaderEmail] = [];
+
+        for (let a = 1; a <= areaCount[d - 1]; a++) {
+          const areaEmail = data[`district${d}area${a}email`];
+          const areaType = data[`district${d}area${a}type`];
+          userAccess[areaEmail] = [`Plots for district${d}area${a}`, `district${d}area${a}`];
+
+          userAccess[districtLeaderEmail].push(`Plots for district${d}area${a}`, `district${d}area${a}`);
+
+          if (areaType === 'sisters') {
+            stlAccess.push(`Plots for district${d}area${a}`, `district${d}area${a}`);
+            userAccess[stlEmail].push(`Plots for district${d}area${a}`, `district${d}area${a}`);
+          }
+        }
+      }
+
+      const scriptContent = generateScript(userAccess, stlAccess);
+      document.getElementById('generatedScript').textContent = scriptContent;
+    });
+
+    function generateScript(userAccess, stlAccess) {
+      const userAccessString = JSON.stringify(userAccess, null, 2);
+      const stlAccessString = JSON.stringify(stlAccess, null, 2);
+
+      return `
+function onOpen() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var user = Session.getActiveUser().getEmail();
+
+  // List of users and their sheet access
+  var userAccess = ${userAccessString};
+
+  // STL access to all sisters' areas
+  var stlAccess = ${stlAccessString};
+
+  // Define a default sheet that should always be visible
+  var defaultSheetName = 'Home'; // Replace 'Home' with the actual name of your default sheet
+  
+  // Iterate through all sheets in the spreadsheet
+  var sheets = ss.getSheets();
+  for (var i = 0; i < sheets.length; i++) {
+    var sheet = sheets[i];
+    var sheetName = sheet.getName();
+
+    // Ensure the default sheet is always visible
+    if (sheetName === defaultSheetName) {
+      sheet.showSheet();
+      continue;
+    }
+
+    // Check if the user is an admin
+    if (userAccess[user] === 'admin') {
+      // Show all sheets for the admin
+      sheet.showSheet();
+    } else if (userAccess[user] && userAccess[user].includes(sheetName)) {
+      // Show the sheet if the user has access
+      sheet.showSheet();
+    } else if (stlAccess.includes(sheetName) && user.includes('stl')) {
+      // Show the sheet if the user is an STL and has access to sisters' areas
+      sheet.showSheet();
+    } else {
+      // Hide the sheet if the user does not have access
+      sheet.hideSheet();
+    }
+  }
+}
+      `;
+    }
+  </script>
+</body>
+</html>
